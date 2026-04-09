@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.log
+*.xlsx
+*.txt
+.DS_Store
+.course_folder_audit_recent.json
+dist/
+build/
+*.spec
