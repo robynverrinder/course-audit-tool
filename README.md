@@ -61,8 +61,10 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python course_audit_tool.py
+python3 course_audit_tool.py
 ```
+
+> **Windows users:** use `python course_audit_tool.py` or `python3 course_audit_tool.py` depending on your installation. Run `python --version` and `python3 --version` to check which is available.
 
 1. **Select a course root** using the Browse button or pick from the recent-directories dropdown.
 2. **Choose a profile** — leave on *Auto-detect* or manually select Current, Legacy, or Updated.
