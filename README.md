@@ -83,7 +83,7 @@ Two files are saved into the course root directory:
 ## Folder Structure Profiles
 
 ### Current
-The standard 13-folder layout used from approximately 2022 onwards.  
+The standard 13-folder layout used from approximately 2025 onwards.  
 Exam content is split across `12. Exams Main (Admin)` and `13. Exams SUPP (Admin)`.
 
 ### Legacy
