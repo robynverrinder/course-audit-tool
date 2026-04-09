@@ -51,7 +51,7 @@ pip install -r requirements.txt
 ## Installation
 
 ```bash
-git clone https://github.com/<your-org>/course-folder-audit.git
+git clone https://github.com/robynverrinder/course-folder-audit.git
 cd course-folder-audit
 pip install -r requirements.txt
 ```
