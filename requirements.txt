@@ -1,0 +1,13 @@
+# Course Folder Audit Tool — Python dependencies
+# Install with: pip install -r requirements.txt
+#
+# Standard library modules used (no install needed):
+#   json, os, re, sys, traceback, typing, collections, datetime, tkinter
+
+# Excel workbook generation (required)
+openpyxl>=3.1.5
+
+# Image handling for title-bar logos (optional)
+# If Pillow is not installed the app starts normally with plain-text
+# fallbacks in place of the logos — no audit functionality is lost.
+Pillow>=10.0.0
