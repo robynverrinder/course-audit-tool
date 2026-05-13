@@ -538,6 +538,7 @@ class CourseFolderAuditApp:
         "REVIEW - HAND-INS":      ("F9CB9C", "000000"),  # Bold orange  — hand-in validation failed
         "DUPLICATE":              ("EA9999", "000000"),  # Bold red     — name collision on disk
         "ADMIN FLAG":             ("FFD966", "000000"),  # Bold amber   — administrator status marker in folder name
+        "UNSIGNED FILE":          ("FCE4D6", "000000"),  # Light orange — file name indicates unsigned document
     }
 
     # ==================================================================== #
@@ -2342,6 +2343,7 @@ class CourseFolderAuditApp:
         total_size_bytes = 0
         folder_data:  list[dict] = []
         file_details: list[dict] = []
+        unsigned_file_issues: list[dict] = []
         overall_file_types       = Counter()
 
         # Run structure validation before the walk so status lookup is ready
@@ -2427,9 +2429,10 @@ class CourseFolderAuditApp:
         issue_statuses = {
             "MISSING", "EMPTY - REVIEW", "UNEXPECTED",
             "POPULATED DESPITE NONE", "REVIEW - HAND-INS", "DUPLICATE",
-            "ADMIN FLAG",
+            "ADMIN FLAG", "UNSIGNED FILE",
         }
         issue_rows = [row for row in expected_results if row["status"] in issue_statuses]
+        issue_rows += unsigned_file_issues
 
         return {
             "profile_name":             detected_profile,
