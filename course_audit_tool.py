@@ -95,22 +95,31 @@ _UNSIGNED_PATTERN = re.compile(r'[\s\-_]unsigned$', re.IGNORECASE)
 
 # Authorised auditors shown in the dropdown
 AUDIT_USERS: list[str] = [
-    "Robyn Verrinder",
-    "Yunus Abdul Gaffar",
-    "Joyce Mwangama",
-    "Janine Buxey",
-    "Rachmat Harris",
-    "Verona Langenhoven",
+    "Verrinder",
+    "YAbdul Gaffar",
+    "Mwangama",
+    "Buxey",
+    "Harris",
+    "Langenhoven",
 ]
 
 # Teaching assistants shown in the TA dropdown (editable — type to add a custom name)
 TA_NAMES: list[str] = [
     "",
-    "Jones",
-    "Wimberley",
-    "Rom",
-    "Eyasim",
-    "Ekwe",
+    "Obbo",
+    "Moradi",
+    "Islam",
+    "Ferreiro",
+    "Tallack",
+    "Mwangi",
+    "Tetteh",
+    "Kalonji",
+    "Maqungu",
+    "Mahlaola",
+    "Magavha",
+    "Maimbo",
+    "Makhubela",
+    "Webb",
 ]
 
 # GA course codes — case-insensitive, year-independent
