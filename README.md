@@ -1,254 +1,183 @@
 # Course Folder Audit Tool
 
-A desktop GUI application for auditing standardised EEE course folders at UCT.  
-The tool compares a selected course folder against an expected structure profile,
-flags issues, and exports a plain-text log and a colour-coded Excel workbook for
-coordinated review.
-
----
-
-## Features
-
-- **Three structure profiles** — Current, Legacy, and Updated (auto-detected or manually selected)
-- **NONE convention** — folders marked with `NONE` are treated as intentionally empty
-- **Admin marker detection** — folders renamed by administrators with status words (e.g. `MISSING`, `INCOMPLETE`, `UNSIGNED`) are detected, matched to their template entry, and flagged `ADMIN FLAG` for review
-- **Issue detection** — flags Missing, Empty, Unexpected, Duplicate, and "Populated Despite NONE" folders
-- **Sample hand-ins validation** — checks that each submission group has ≥ 15 PDF or Word documents; other file types (e.g. `.yml`, `.zip`) are ignored and do not cause a flag
-- **Per-group issue reporting** — when a submission group fails, the specific folder name is named in the detail message
-- **Flat-file tolerance** — folders that contain files directly (without subfolders) are accepted as OK rather than flagging expected subfolders as missing
-- **Six tabbed views** — Log Output, Issues, Expected Structure Check, Folder Details, File Details, ASCII Tree
-- **Excel workbook output** — colour-coded status cells and blank reviewer columns for coordinated review
-- **Plain-text log** — full audit record saved alongside the workbook
-- **Recent directories** — last 10 used paths persisted between sessions
+A desktop GUI application for auditing EEE course folder structures at UCT against the departmental archive standard. Produces a plain-text log and an Excel review workbook saved directly into the scanned course folder.
 
 ---
 
 ## Requirements
 
-- Python 3.10 or later
-- [openpyxl](https://openpyxl.readthedocs.io/) — Excel workbook generation
-- [Pillow](https://pillow.readthedocs.io/) — PNG logo rendering in the title bar
-- tkinter — included with standard Python on Windows and macOS
+- Python 3.10 or later (tested on 3.13.9 with Anaconda `base`)
+- `openpyxl` — Excel workbook generation
+- `Pillow` — optional, for logo display in the title bar
 
 Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install openpyxl Pillow
 ```
 
-> **macOS note:** If `tkinter` is missing, install it via Homebrew:
-> ```bash
-> brew install python-tk
-> ```
-
-> **Logo note:** Place `logo_uct.png` and `logo_eee.png` in the same folder as
-> the script. If either file is missing, or if Pillow is not installed, the
-> application falls back to a plain text label — no functionality is affected.
-> The UCT logo is used as the window/taskbar icon.
-
----
-
-## Installation
+Or with conda:
 
 ```bash
-git clone https://github.com/robynverrinder/course-folder-audit.git
-cd course-folder-audit
-pip install -r requirements.txt
+conda install openpyxl Pillow
 ```
 
 ---
 
-## Usage
+## Running the tool
 
 ```bash
 python3 course_audit_tool.py
 ```
 
-> **Windows users:** use `python course_audit_tool.py` or `python3 course_audit_tool.py` depending on your installation. Run `python --version` and `python3 --version` to check which is available.
-
-1. **Select a course root** using the Browse button or pick from the recent-directories dropdown.
-2. **Choose a profile** — leave on *Auto-detect* or manually select Current, Legacy, or Updated.
-3. **Select an auditor** from the dropdown.
-4. Click **Run Audit and Create Outputs**.
-
-Two files are saved into the course root directory:
-
-| File | Description |
-|------|-------------|
-| `YYYYMMDD_<course>_folder_audit.txt` | Plain-text audit log |
-| `YYYYMMDD_<course>_folder_audit.xlsx` | Excel workbook with colour-coded status |
+From VS Code, set the interpreter to your Anaconda `base` environment and run directly. On macOS, `conda activate base` first if your terminal does not activate it automatically.
 
 ---
 
-## Folder Structure Profiles
+## What it does
 
-### Current
-The standard 13-folder layout used from approximately 2025 onwards.  
-Exam content is split across `12. Exams Main (Admin)` and `13. Exams SUPP (Admin)`.
+Point the tool at a course-year folder (e.g. `2025 EEE2046F EEE2050F Abdul-Gaffar`) and click **Run Audit and Create Outputs**. The tool:
 
-### Legacy
-An earlier 13-folder layout. Key differences:
-- Lessons include a `Recordings` subfolder
-- Many subfolders carry an `(h)` suffix (hidden/restricted content)
-- Exam content lives in `09. Exam` and `13. Supplementary Exam`
-- `11. Additional resources` has explicit subfolders
-
-### Updated
-A simplified 7-folder layout introduced with the new template. Key differences:
-- `02. Teaching material` holds notes and prescribed textbooks
-- `04. Practicals & Labs` replaces the standalone Practicals folder
-- Subfolders use `Handouts` instead of `Instruction sheets`
-- A single `07. Exams` folder contains `Main Exams` and `SUPP Exams` sub-groups, each holding the same five subfolders
-
-### Auto-detection
-When set to *Auto-detect*, the tool scores the top-level folder names on disk against unique markers for each profile and selects the best match. The folder count is also used as a tiebreaker — Updated courses have 7 top-level folders, while Current and Legacy have 13. If no markers match, Current is used as the safe default.
+1. Auto-detects the folder structure profile (Legacy, Current, New, or EEE4022)
+2. Compares every folder against the expected template for that profile
+3. Checks that key folders contain the right file types (course handout, DP list, mark sheets, external moderator reports, sample hand-ins)
+4. For GA courses, validates the `00_ga_moderation` folder and checks assessment forms completeness against the reference student count
+5. Flags unsigned files, admin status markers, duplicates, NONE-marked folders with content, and unexpected folders
+6. Saves a `.txt` log and `.xlsx` workbook into the scanned course root
 
 ---
 
-## NONE Convention
+## Folder structure profiles
 
-Any folder whose name contains the word `NONE` (in any position, with any
-surrounding separator) is treated as intentionally empty for this offering.
+| Profile | Years | Key markers |
+|---|---|---|
+| Legacy | 2023, 2024 | `09. Exam`, `13. Supplementary Exam`, `(h)` suffixes |
+| Current | 2025 | `12. Exams Main (Admin)`, `13. Exams SUPPS (Admin)`, no `(h)` |
+| New | 2026 | `lower_snake_case` folder names, `08_exams` two-level structure |
+| EEE4022 | any | Course code `EEE4022` in folder name — project-based capstone course |
 
-| State | Status |
-|-------|--------|
-| NONE-marked folder, empty | `NONE - ACCEPTED` |
-| NONE-marked folder, has files | `POPULATED DESPITE NONE` |
-
-Examples that are recognised: `a. Slides NONE`, `a. Slides - NONE`, `NONE slides`
+Profile is auto-detected from the year in the folder name. It can also be set manually from the dropdown.
 
 ---
 
-## Admin Marker Convention
+## GA courses
 
-Administrators sometimes rename folders to flag issues manually, appending a status word to the folder name rather than moving or deleting it. The tool detects these annotations, still matches the folder to its correct template entry, and flags it as `ADMIN FLAG` (amber) so it appears in the Issues tab for review.
+The following course codes are treated as GA courses and require a `00_ga_moderation` folder:
 
-Recognised marker words and phrases (trailing position only):
+```
+EEE3088F  EEE3096S  EEE3097S  EEE3098S  EEE3099S  EEE3100S
+EEE4022F  EEE4022S  EEE4113F  EEE4118F  EEE4119F  EEE4120F
+EEE4121F  EEE4124C  EEE4125C  EEE4126F
+```
 
-| Marker | Example folder name |
-|--------|-------------------|
+For GA assessment forms completeness, the tool reads the reference student count from the mark sheets folder under the main exam folder. Drop a UCT PeopleSoft class list export (with an `Emplid` or `Campus ID` column) into `f. Mark sheets` / `d_marksheets` and it will be picked up automatically.
+
+---
+
+## Status flags
+
+| Status | Meaning |
+|---|---|
+| `OK` | Folder found and passes all checks |
+| `EMPTY - REVIEW` | Folder exists but contains no files |
+| `MISSING` | Expected folder is absent |
+| `UNEXPECTED` | Folder exists but is not in the template |
+| `NONE - ACCEPTED` | Folder is marked NONE and is empty — accepted |
+| `POPULATED DESPITE NONE` | Folder is marked NONE but contains files |
+| `REVIEW - HAND-INS` | Sample hand-ins folder has fewer than 15 submissions in one or more groups |
+| `REVIEW - GA INCOMPLETE` | GA assessment forms folder has fewer files than the reference student count |
+| `DUPLICATE` | Two or more folders resolve to the same normalised name |
+| `ADMIN FLAG` | Folder name contains an admin status marker (MISSING, UNSIGNED, etc.) |
+| `UNSIGNED FILE` | A file name ends with `unsigned` |
+| `MISSING CHILDREN` | Top-level folder found but expected subfolders are missing |
+
+---
+
+## Reference student count
+
+The tool looks for the reference student count in the mark sheets folder under the main exam folder:
+
+| Profile | Path |
+|---|---|
+| Legacy | `09. Exam/f. Mark sheets` |
+| Current | `12. Exams Main (Admin)/f. Mark sheets` |
+| New | `08_exams/01_main/d_marksheets` |
+| EEE4022 | `3. Final Results` |
+
+The first spreadsheet in that folder with an `Emplid` or `Campus ID` column is used. Drop a UCT PeopleSoft export there to enable student count checks.
+
+---
+
+## Output files
+
+Both output files are saved into the scanned course root, named `YYYYMMDD_coursecode_folder_audit.txt` and `.xlsx`.
+
+The workbook has five sheets:
+
+- **Course Audit Summary** — scan metadata and headline counts
+- **Expected Structure Check** — full comparison of expected vs actual folders with status and reviewer columns
+- **Folder Details** — file counts, sizes, and types per folder
+- **File Details** — every file with type, size, and modification date
+- **Exceptions** — issues only, for review and sign-off
+
+---
+
+## NONE convention
+
+Any folder whose name contains the word `NONE` (in any position, any separator) is treated as intentionally empty:
+
+- Empty NONE folder → `NONE - ACCEPTED`
+- NONE folder with content → `POPULATED DESPITE NONE`
+
+Example: `b. Prescribed texts - NONE` is accepted as empty. If files are later added without removing `NONE` from the name, it is flagged.
+
+---
+
+## Admin status markers
+
+Folders with a recognised admin status marker appended to their name are flagged as `ADMIN FLAG` rather than `MISSING` or `EMPTY`. The marker is stripped during normalisation so the folder still matches the expected template entry.
+
+| Marker | Example |
+|---|---|
 | `MISSING` | `f. Mark sheets MISSING` |
-| `INCOMPLETE` | `05. Practicals INCOMPLETE` |
-| `EMPTY` | `a. Exam paper EMPTY` |
-| `UNSIGNED` | `c. External moderator reports UNSIGNED` |
+| `INCOMPLETE` | `c. External moderator reports INCOMPLETE` |
+| `URGENT` | `d. DP list final URGENT` |
+| `TODO` | `a. Course handouts TODO` |
+| `UNSIGNED` | `e. Departmental control sheet UNSIGNED` |
+| `EMPTY` | `b. Prescribed texts EMPTY` |
 | `TO BE SIGNED` | `f. Mark sheets TO BE SIGNED` |
-| `URGENT` | `06. Tests URGENT` |
-| `TODO` | `03. Lessons TODO` |
 
-Compound qualifiers immediately before the marker are also stripped, for example `f. Mark sheets COR MISSING` and `c. External moderator reports SIGNATURES MISSING` both match their template entries correctly.
-
-Words like `REVIEW`, `CHECK`, `ACTION`, and `PENDING` are intentionally excluded as they appear too commonly in legitimate folder names (e.g. `b. Review materials`).
+The marker can be separated from the folder name by a space, hyphen, or underscore. Case is ignored.
 
 ---
 
-Certain folders are checked not just for presence but for the correct file types.
-If files exist but none match the required type, the folder is flagged `EMPTY - REVIEW`
-with a detail message listing what was found.
+## Adding course codes
 
-| Folder | Required file types |
-|--------|-------------------|
-| Course Handout / Course Handouts | At least 1 × `.pdf`, `.doc`, or `.docx` |
-| DP list / DP list final | At least 1 × `.pdf`, `.xls`, `.xlsx`, or `.csv` |
-| Mark Sheets / Marks Sheets *(under Exams)* | At least 1 × `.pdf`, `.xls`, `.xlsx`, or `.csv` |
-| External Moderator Reports *(under Exams)* | At least 1 × `.pdf`, `.doc`, or `.docx` |
-
-### Submission folders (Sample hand-ins, Sample answers, Exam scripts)
-
-Each submission group (e.g. `Practical 1 of 5`, `Tutorial 3`) is validated independently and must contain at least 15 PDF or Word documents (`.pdf`, `.doc`, `.docx`). Other file types present in the same folder are ignored and do not trigger a flag.
-
-If a group fails, the detail message names it explicitly, for example:
-
-> `2 groups with issues: "Practical 3 of 5": 8 PDF/Word docs (expected >=15) | "Practical 5 of 5": 12 PDF/Word docs (expected >=15, 1 other file type(s) ignored)`
-
-Any loose files sitting directly alongside submission subfolders (e.g. a marking note PDF) are ignored — only the leaf subfolders are counted as groups.
-
----
-
-## Status Reference
-
-| Status | Colour | Meaning |
-|--------|--------|---------|
-| `OK` | Green | All checks passed |
-| `EMPTY - REVIEW` | Yellow | Folder exists but contains no files |
-| `MISSING` | Red | Expected folder is absent |
-| `MISSING CHILDREN` | Red | Parent present but a child is missing |
-| `UNEXPECTED` | Orange | Folder exists but is not in the template |
-| `NONE - ACCEPTED` | Blue | Intentionally empty (NONE-marked) |
-| `POPULATED DESPITE NONE` | Purple | NONE-marked folder contains files |
-| `REVIEW - HAND-INS` | Orange | Submission folder has fewer than 15 PDF/Word docs in one or more groups |
-| `DUPLICATE` | Red | Two folders resolve to the same normalised name |
-| `ADMIN FLAG` | Amber | Folder name contains an administrator status marker — review and rename |
-
----
-
-## Building a Standalone Executable
-
-### macOS
-
-```bash
-pip install pyinstaller
-pyinstaller --onefile --windowed --icon=logo_uct.png \
-  --add-data "logo_uct.png:." \
-  --add-data "logo_eee.png:." \
-  course_audit_tool.py
-```
-
-The executable is created at `dist/course_audit_tool`. Rename it as needed.  
-If macOS blocks it with *"unidentified developer"*, right-click → Open the first time.
-
-### Windows
-
-Run the following on a Windows machine (PyInstaller builds for the OS it runs on):
-
-```bat
-pip install pyinstaller openpyxl pillow
-pyinstaller --onefile --windowed --icon=logo_uct.ico ^
-  --add-data "logo_uct.png;." ^
-  --add-data "logo_eee.png;." ^
-  course_audit_tool.py
-```
-
-The executable is created at `dist\course_audit_tool.exe`.  
-Note: `--icon` requires a `.ico` file on Windows. Convert your PNG first:
-
-```bash
-python -c "from PIL import Image; img = Image.open('logo_uct.png'); img.save('logo_uct.ico', sizes=[(16,16),(32,32),(48,48),(256,256)])"
-```
-
-If Windows Defender blocks the exe, click *More info → Run anyway* in the SmartScreen dialog.
-
----
-
-## Adding Auditors
-
-Open `course_audit_tool.py` and add names to the `AUDIT_USERS` list near the top of the file:
+To add a GA course code, edit the `GA_COURSES` set near the top of `course_audit_tool.py`:
 
 ```python
-AUDIT_USERS: list[str] = [
-    "Robyn Verrinder",
-    "Yunus Abdul Gaffar",
-    # Add new auditors here
+GA_COURSES: set[str] = {
+    "eee4022s", "eee4022f",
+    ...
+}
+```
+
+Codes are lowercase and year-independent.
+
+To add a TA name to the dropdown, edit the `TA_NAMES` list:
+
+```python
+TA_NAMES: list[str] = [
+    "",
+    "Jones",
+    ...
 ]
 ```
 
-No other code changes are required.
-
 ---
 
-## Project Structure
+## Repository
 
-```
-course-folder-audit/
-├── course_audit_tool.py  # Main application
-├── logo_uct.png          # UCT logo (title bar right, window icon)
-├── logo_eee.png          # EEE logo (title bar left)
-├── requirements.txt      # Python dependencies
-├── README.md             # This file
-└── LICENSE               # MIT licence
-```
+`robynverrinder/course-audit-tool`
 
----
-
-## License
-
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+Maintained by R.A. Verrinder, Department of Electrical and Electronic Engineering, UCT.
