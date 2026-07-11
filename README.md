@@ -1,14 +1,27 @@
 # Course Folder Audit Tool
 
-A desktop GUI application for auditing EEE course folder structures at UCT against the departmental archive standard. Produces a plain-text log and an Excel review workbook saved directly into the scanned course folder.
+A desktop GUI application for auditing EEE course folder structures at UCT against the departmental archive standard. Point it at a course-year folder and it produces a plain-text log and an Excel review workbook, saved directly into the scanned course folder.
+
+---
+
+## What it does
+
+Point the tool at a course-year folder (e.g. `2025 EEE2046F EEE2050F Abdul-Gaffar`) and click **Run Audit and Create Outputs**. The tool:
+
+1. Auto-detects the folder structure profile (Legacy, Current, New, or EEE4022)
+2. Compares every folder against the expected template for that profile
+3. Checks that key folders contain the right file types (course handout, DP list, mark sheets, external moderator reports, sample hand-ins)
+4. For GA courses, validates the `00_ga_moderation` folder and checks assessment forms completeness against the reference student count
+5. Flags unsigned files, admin status markers, duplicates, NONE-marked folders with content, and unexpected folders
+6. Saves a `.txt` log and `.xlsx` workbook into the scanned course root
 
 ---
 
 ## Requirements
 
 - Python 3.10 or later (tested on 3.13.9 with Anaconda `base`)
-- `openpyxl` — Excel workbook generation
-- `Pillow` — optional, for logo display in the title bar
+- `openpyxl` for Excel workbook generation
+- `Pillow` (optional) for logo display in the title bar
 
 Install dependencies:
 
@@ -34,19 +47,6 @@ From VS Code, set the interpreter to your Anaconda `base` environment and run di
 
 ---
 
-## What it does
-
-Point the tool at a course-year folder (e.g. `2025 EEE2046F EEE2050F Abdul-Gaffar`) and click **Run Audit and Create Outputs**. The tool:
-
-1. Auto-detects the folder structure profile (Legacy, Current, New, or EEE4022)
-2. Compares every folder against the expected template for that profile
-3. Checks that key folders contain the right file types (course handout, DP list, mark sheets, external moderator reports, sample hand-ins)
-4. For GA courses, validates the `00_ga_moderation` folder and checks assessment forms completeness against the reference student count
-5. Flags unsigned files, admin status markers, duplicates, NONE-marked folders with content, and unexpected folders
-6. Saves a `.txt` log and `.xlsx` workbook into the scanned course root
-
----
-
 ## Folder structure profiles
 
 | Profile | Years | Key markers |
@@ -54,7 +54,7 @@ Point the tool at a course-year folder (e.g. `2025 EEE2046F EEE2050F Abdul-Gaffa
 | Legacy | 2023, 2024 | `09. Exam`, `13. Supplementary Exam`, `(h)` suffixes |
 | Current | 2025 | `12. Exams Main (Admin)`, `13. Exams SUPPS (Admin)`, no `(h)` |
 | New | 2026 | `lower_snake_case` folder names, `08_exams` two-level structure |
-| EEE4022 | any | Course code `EEE4022` in folder name — project-based capstone course |
+| EEE4022 | any | Course code `EEE4022` in folder name, project-based capstone course |
 
 Profile is auto-detected from the year in the folder name. It can also be set manually from the dropdown.
 
@@ -82,7 +82,7 @@ For GA assessment forms completeness, the tool reads the reference student count
 | `EMPTY - REVIEW` | Folder exists but contains no files |
 | `MISSING` | Expected folder is absent |
 | `UNEXPECTED` | Folder exists but is not in the template |
-| `NONE - ACCEPTED` | Folder is marked NONE and is empty — accepted |
+| `NONE - ACCEPTED` | Folder is marked NONE and is empty, accepted |
 | `POPULATED DESPITE NONE` | Folder is marked NONE but contains files |
 | `REVIEW - HAND-INS` | Sample hand-ins folder has fewer than 15 submissions in one or more groups |
 | `REVIEW - GA INCOMPLETE` | GA assessment forms folder has fewer files than the reference student count |
@@ -114,11 +114,11 @@ Both output files are saved into the scanned course root, named `YYYYMMDD_course
 
 The workbook has five sheets:
 
-- **Course Audit Summary** — scan metadata and headline counts
-- **Expected Structure Check** — full comparison of expected vs actual folders with status and reviewer columns
-- **Folder Details** — file counts, sizes, and types per folder
-- **File Details** — every file with type, size, and modification date
-- **Exceptions** — issues only, for review and sign-off
+- **Course Audit Summary**: scan metadata and headline counts
+- **Expected Structure Check**: full comparison of expected vs actual folders with status and reviewer columns
+- **Folder Details**: file counts, sizes, and types per folder
+- **File Details**: every file with type, size, and modification date
+- **Exceptions**: issues only, for review and sign-off
 
 ---
 
@@ -126,8 +126,8 @@ The workbook has five sheets:
 
 Any folder whose name contains the word `NONE` (in any position, any separator) is treated as intentionally empty:
 
-- Empty NONE folder → `NONE - ACCEPTED`
-- NONE folder with content → `POPULATED DESPITE NONE`
+- Empty NONE folder becomes `NONE - ACCEPTED`
+- NONE folder with content becomes `POPULATED DESPITE NONE`
 
 Example: `b. Prescribed texts - NONE` is accepted as empty. If files are later added without removing `NONE` from the name, it is flagged.
 
@@ -178,6 +178,10 @@ TA_NAMES: list[str] = [
 
 ## Repository
 
-`robynverrinder/course-audit-tool`
+`uct-eee-department/course-audit-tool`
+
+```bash
+git clone git@github.com:uct-eee-department/course-audit-tool.git
+```
 
 Maintained by R.A. Verrinder, Department of Electrical and Electronic Engineering, UCT.
